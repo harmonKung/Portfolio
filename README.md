@@ -8,7 +8,7 @@
 -- Email: harmonung@gmail.com
 
 -- desc 
--- a small pixel game town pportoflio
+-- a small pixel game town portfolio
 
 -- run it 
 -- 1. Extract the ZIP. 
