@@ -4,10 +4,18 @@ const GAME_HEIGHT = 600;
 class TownScene extends Phaser.Scene {
   constructor() { super("TownScene"); }
 
+  // Load up any assets needed for the game. In this case, we only have a single character sprite sheet.
+  preload() {
+    this.load.spritesheet("chiikawa", "assets/characters/chiikawa.png", {
+      frameWidth: 96,
+      frameHeight: 96
+    });
+  }
+
   create() {
     this.makeTextures();
     this.drawTown();
-    this.player = this.physics.add.sprite(480, 390, "player-down");
+    this.player = this.physics.add.sprite(480, 390, "chiikawa");
     this.player.setDepth(20).setCollideWorldBounds(true).setSize(17, 19).setOffset(7, 11);
     this.playerSpeed = 145;
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -30,22 +38,6 @@ class TownScene extends Phaser.Scene {
 
   makeTextures() {
     const g = this.make.graphics({ x: 0, y: 0, add: false });
-    // Player sprites: simple GBA-inspired trainer with directional variants.
-    const drawPlayer = (direction) => {
-      g.clear();
-      g.fillStyle(0x263d4b); g.fillRect(8, 2, 16, 8);
-      g.fillStyle(0xe9b58b); g.fillRect(10, 7, 12, 12);
-      g.fillStyle(0x293c55); g.fillRect(8, 17, 16, 8);
-      g.fillStyle(0xf2d9a5); g.fillRect(9, 24, 6, 5); g.fillRect(18, 24, 6, 5);
-      g.fillStyle(0x4c7892); g.fillRect(7, 18, 18, 5);
-      g.fillStyle(0x253845);
-      if (direction === "left") g.fillRect(10, 11, 3, 3);
-      else if (direction === "right") g.fillRect(19, 11, 3, 3);
-      else if (direction === "up") { g.fillRect(10, 7, 12, 3); g.fillRect(8, 3, 16, 5); }
-      else { g.fillRect(11, 12, 2, 2); g.fillRect(19, 12, 2, 2); }
-      g.generateTexture("player-" + direction, 32, 32);
-    };
-    ["down", "up", "left", "right"].forEach(drawPlayer);
 
     // Grass tile and path tile.
     g.clear(); g.fillStyle(0x77b96b); g.fillRect(0, 0, 32, 32);
@@ -58,6 +50,27 @@ class TownScene extends Phaser.Scene {
     g.fillStyle(0x80c9d0); g.fillRect(4, 5, 8, 2); g.fillRect(19, 20, 9, 2);
     g.generateTexture("water", 32, 32);
     g.destroy();
+  }
+
+  // Player animation for Chiikawa sprite
+  createPlayerAnimations() {
+    const directions = [
+      { name: "down", start: 0 },
+      { name: "right", start: 4 },
+      { name: "up", start: 8 },
+      { name: "left", start: 12 }
+    ];
+
+    directions.forEach(({ name, start }) => {
+      this.anims.create({
+        key: `chiikawa-walk-${name}`,
+        frames: this.anims.generateFrameNumbers("chiikawa", {
+          frames: [start + 1, start + 2, start + 3, start + 2]
+        }),
+        frameRate: 7,
+        repeat: -1
+      });
+    });
   }
 
   drawTown() {
@@ -192,91 +205,102 @@ class TownScene extends Phaser.Scene {
   }
 
 
-drawSign(x, y, label) {
-  this.add.rectangle(x, y + 10, 7, 28, 0x80583b).setDepth(4);
-  this.add.rectangle(x, y - 3, 74, 24, 0xb77c48).setDepth(5);
-  this.add.rectangle(x, y - 3, 66, 16, 0xf3d89e).setDepth(6);
-  this.add.text(x, y - 3, label, { fontFamily: "monospace", fontSize: "8px", color: "#4a4434", fontStyle: "bold" }).setOrigin(.5).setDepth(7);
-}
+  drawSign(x, y, label) {
+    this.add.rectangle(x, y + 10, 7, 28, 0x80583b).setDepth(4);
+    this.add.rectangle(x, y - 3, 74, 24, 0xb77c48).setDepth(5);
+    this.add.rectangle(x, y - 3, 66, 16, 0xf3d89e).setDepth(6);
+    this.add.text(x, y - 3, label, { fontFamily: "monospace", fontSize: "8px", color: "#4a4434", fontStyle: "bold" }).setOrigin(.5).setDepth(7);
+  }
 
-createInteractions() {
-  this.obstacles = this.physics.add.staticGroup();
-  // Invisible collision blocks in front of buildings, trees and pond.
-  [[260, 230, 112, 20], [480, 175, 140, 25], [700, 230, 112, 20], [480, 470, 112, 20],
-  [80, 126, 110, 115], [64, 320, 30, 30], [160, 96, 30, 30], [256, 96, 30, 30], [768, 96, 30, 30],
-  [864, 160, 30, 30], [864, 320, 30, 30], [64, 512, 30, 30], [160, 544, 30, 30], [800, 544, 30, 30],
-  [896, 480, 30, 30], [256, 512, 30, 30], [704, 512, 30, 30]].forEach(([x, y, w, h]) => {
-    const o = this.add.rectangle(x, y, w, h, 0x000000, 0); this.physics.add.existing(o, true); this.obstacles.add(o);
-  });
+  createInteractions() {
+    this.obstacles = this.physics.add.staticGroup();
+    // Invisible collision blocks in front of buildings, trees and pond.
+    [[260, 230, 112, 20], [480, 175, 140, 25], [700, 230, 112, 20], [480, 470, 112, 20],
+    [80, 126, 110, 115], [64, 320, 30, 30], [160, 96, 30, 30], [256, 96, 30, 30], [768, 96, 30, 30],
+    [864, 160, 30, 30], [864, 320, 30, 30], [64, 512, 30, 30], [160, 544, 30, 30], [800, 544, 30, 30],
+    [896, 480, 30, 30], [256, 512, 30, 30], [704, 512, 30, 30]].forEach(([x, y, w, h]) => {
+      const o = this.add.rectangle(x, y, w, h, 0x000000, 0); this.physics.add.existing(o, true); this.obstacles.add(o);
+    });
 
-  this.interactables = [
-    { x: 260, y: 255, name: "My House", title: "A little about me", body: "Hi! I'm Harmon, a Computer Science graduate from Carleton University. Welcome to my little corner of the internet.", action: "about" },
-    { x: 480, y: 195, name: "Carleton University", title: "My University", body: "Carleton University\\nBachelor of Computer Science\\n2021 – 2026\\n\\nThis is where my interest in software development grew.", action: "education" },
-    { x: 700, y: 255, name: "Workshop", title: "Skills & tools", body: "Languages: Java, Python, C, C++, JavaScript, HTML/CSS\\n\\nTools: React, Node.js, Git, VS Code, IntelliJ\\n\\nI'm always learning something new.", action: "skills" },
-    { x: 480, y: 495, name: "Project Lab", title: "Featured projects", body: "GrindnSharpen — full-stack fitness app\\nOregon Trail — Python / Pygame\\nTic Tac Toe — Java\\n\\nChoose a project link below to explore the code.", action: "projects" },
-    { x: 180, y: 420, name: "Town Sign", title: "How to explore", body: "Use the arrow keys or WASD to move. Walk close to a building or sign, then press E to interact. Press E or Esc to close this message.", action: "help" }
-  ];
-  this.prompt = this.add.text(0, 0, "", { fontFamily: "monospace", fontSize: "11px", color: "#ffffff", backgroundColor: "#263f50", padding: { x: 8, y: 6 } }).setOrigin(.5).setDepth(40).setVisible(false);
-  this.interactables.forEach(item => {
-    item.zone = this.add.zone(item.x, item.y, 95, 54);
-    this.physics.add.existing(item.zone, true);
-  });
-}
+    this.interactables = [
+      { x: 260, y: 255, name: "My House", title: "A little about me", body: "Hi! I'm Harmon, a Computer Science graduate from Carleton University. Welcome to my little corner of the internet.", action: "about" },
+      { x: 480, y: 195, name: "Carleton University", title: "My University", body: "Carleton University\\nBachelor of Computer Science\\n2021 – 2026\\n\\nThis is where my interest in software development grew.", action: "education" },
+      { x: 700, y: 255, name: "Workshop", title: "Skills & tools", body: "Languages: Java, Python, C, C++, JavaScript, HTML/CSS\\n\\nTools: React, Node.js, Git, VS Code, IntelliJ\\n\\nI'm always learning something new.", action: "skills" },
+      { x: 480, y: 495, name: "Project Lab", title: "Featured projects", body: "GrindnSharpen — full-stack fitness app\\nOregon Trail — Python / Pygame\\nTic Tac Toe — Java\\n\\nChoose a project link below to explore the code.", action: "projects" },
+      { x: 180, y: 420, name: "Town Sign", title: "How to explore", body: "Use the arrow keys or WASD to move. Walk close to a building or sign, then press E to interact. Press E or Esc to close this message.", action: "help" }
+    ];
+    this.prompt = this.add.text(0, 0, "", { fontFamily: "monospace", fontSize: "11px", color: "#ffffff", backgroundColor: "#263f50", padding: { x: 8, y: 6 } }).setOrigin(.5).setDepth(40).setVisible(false);
+    this.interactables.forEach(item => {
+      item.zone = this.add.zone(item.x, item.y, 95, 54);
+      this.physics.add.existing(item.zone, true);
+    });
+  }
 
-createHud() {
-  this.dialog = this.add.container(0, 0).setDepth(100).setVisible(false);
-  const panel = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 104, GAME_WIDTH - 40, 156, 0x203a4b).setStrokeStyle(4, 0xf5e5bd);
-  const inner = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 104, GAME_WIDTH - 52, 144, 0x294d5c).setStrokeStyle(2, 0x76949a);
-  this.dialogTitle = this.add.text(54, GAME_HEIGHT - 171, "", { fontFamily: "monospace", fontSize: "17px", fontStyle: "bold", color: "#ffe6a7" });
-  this.dialogBody = this.add.text(54, GAME_HEIGHT - 137, "", { fontFamily: "monospace", fontSize: "14px", color: "#fffdf0", lineSpacing: 7, wordWrap: { width: GAME_WIDTH - 110 } });
-  this.dialogHint = this.add.text(GAME_WIDTH - 62, GAME_HEIGHT - 43, "E / ESC", { fontFamily: "monospace", fontSize: "11px", color: "#c4d6ce" }).setOrigin(1);
-  this.dialog.add([panel, inner, this.dialogTitle, this.dialogBody, this.dialogHint]);
-  this.dialogTitle.setDepth(101); this.dialogBody.setDepth(101); this.dialogHint.setDepth(101);
-}
+  createHud() {
+    this.dialog = this.add.container(0, 0).setDepth(100).setVisible(false);
+    const panel = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 104, GAME_WIDTH - 40, 156, 0x203a4b).setStrokeStyle(4, 0xf5e5bd);
+    const inner = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 104, GAME_WIDTH - 52, 144, 0x294d5c).setStrokeStyle(2, 0x76949a);
+    this.dialogTitle = this.add.text(54, GAME_HEIGHT - 171, "", { fontFamily: "monospace", fontSize: "17px", fontStyle: "bold", color: "#ffe6a7" });
+    this.dialogBody = this.add.text(54, GAME_HEIGHT - 137, "", { fontFamily: "monospace", fontSize: "14px", color: "#fffdf0", lineSpacing: 7, wordWrap: { width: GAME_WIDTH - 110 } });
+    this.dialogHint = this.add.text(GAME_WIDTH - 62, GAME_HEIGHT - 43, "E / ESC", { fontFamily: "monospace", fontSize: "11px", color: "#c4d6ce" }).setOrigin(1);
+    this.dialog.add([panel, inner, this.dialogTitle, this.dialogBody, this.dialogHint]);
+    this.dialogTitle.setDepth(101); this.dialogBody.setDepth(101); this.dialogHint.setDepth(101);
+  }
 
-openDialog(item) {
-  this.dialogOpen = true;
-  this.dialogTitle.setText(item.title);
-  this.dialogBody.setText(item.body);
-  this.dialog.setVisible(true);
-  this.physics.world.pause();
-  this.player.anims?.stop();
-}
+  openDialog(item) {
+    this.dialogOpen = true;
+    this.dialogTitle.setText(item.title);
+    this.dialogBody.setText(item.body);
+    this.dialog.setVisible(true);
+    this.physics.world.pause();
+    this.player.anims?.stop();
+  }
 
-closeDialog() {
-  if (!this.dialogOpen) return;
-  this.dialogOpen = false;
-  this.dialog.setVisible(false);
-  this.physics.world.resume();
-}
+  closeDialog() {
+    if (!this.dialogOpen) return;
+    this.dialogOpen = false;
+    this.dialog.setVisible(false);
+    this.physics.world.resume();
+  }
 
-update() {
-  if (!this.player || this.dialogOpen) return;
-  const left = this.cursors.left.isDown || this.keys.A.isDown;
-  const right = this.cursors.right.isDown || this.keys.D.isDown;
-  const up = this.cursors.up.isDown || this.keys.W.isDown;
-  const down = this.cursors.down.isDown || this.keys.S.isDown;
-  let vx = 0, vy = 0;
-  if (left) vx = -1; else if (right) vx = 1;
-  if (up) vy = -1; else if (down) vy = 1;
-  if (vx && vy) { vx *= 0.7071; vy *= 0.7071; }
-  this.player.setVelocity(vx * this.playerSpeed, vy * this.playerSpeed);
-  if (vx < 0) this.player.setTexture("player-left");
-  else if (vx > 0) this.player.setTexture("player-right");
-  else if (vy < 0) this.player.setTexture("player-up");
-  else if (vy > 0) this.player.setTexture("player-down");
+  update() {
+    if (!this.player || this.dialogOpen) return;
+    const left = this.cursors.left.isDown || this.keys.A.isDown;
+    const right = this.cursors.right.isDown || this.keys.D.isDown;
+    const up = this.cursors.up.isDown || this.keys.W.isDown;
+    const down = this.cursors.down.isDown || this.keys.S.isDown;
+    let vx = 0, vy = 0;
+    if (left) vx = -1; else if (right) vx = 1;
+    if (up) vy = -1; else if (down) vy = 1;
+    if (vx && vy) { vx *= 0.7071; vy *= 0.7071; }
 
-  let closest = null, distance = Infinity;
-  this.interactables.forEach(item => {
-    const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, item.x, item.y);
-    if (d < 76 && d < distance) { closest = item; distance = d; }
-  });
-  this.nearby = closest;
-  if (closest) {
-    this.prompt.setText("E  TALK");
-    this.prompt.setPosition(closest.x, closest.y - 48).setVisible(true);
-  } else this.prompt.setVisible(false);
-}
+    this.player.setVelocity(vx * this.playerSpeed, vy * this.playerSpeed);
+    if (vx < 0) this.player.setTexture("player-left");
+    else if (vx > 0) this.player.setTexture("player-right");
+    else if (vy < 0) this.player.setTexture("player-up");
+    else if (vy > 0) this.player.setTexture("player-down");
+
+    // Chiikawa sprite animation based on movement direction
+    if (vx !== 0 || vy !== 0) {
+      this.player.anims.play(`chiikawa-walk-${this.facing}`, true);
+    } else {
+      this.player.anims.stop();
+      const idleFrames = { down: 0, right: 4, up: 8, left: 12 };
+      this.player.setFrame(idleFrames[this.facing]);
+    }
+
+
+    let closest = null, distance = Infinity;
+    this.interactables.forEach(item => {
+      const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, item.x, item.y);
+      if (d < 76 && d < distance) { closest = item; distance = d; }
+    });
+    this.nearby = closest;
+    if (closest) {
+      this.prompt.setText("E  TALK");
+      this.prompt.setPosition(closest.x, closest.y - 48).setVisible(true);
+    } else this.prompt.setVisible(false);
+  }
 }
 
 
