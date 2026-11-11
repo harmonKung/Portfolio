@@ -15,8 +15,23 @@ class TownScene extends Phaser.Scene {
   create() {
     this.makeTextures();
     this.drawTown();
-    this.player = this.physics.add.sprite(480, 390, "chiikawa");
-    this.player.setDepth(20).setCollideWorldBounds(true).setSize(17, 19).setOffset(7, 11);
+    // White backing behind Chiikawa
+    this.playerFill = this.add.ellipse(
+      480, 390,
+      37, 43,
+      0xffffff
+    ).setDepth(19);
+    // Character sprite
+    this.player = this.physics.add.sprite(
+      480, 390,
+      "chiikawa",
+      0
+    );
+
+    this.player.setDisplaySize(64, 64);
+    this.player.setDepth(20);
+    this.facing = "down";
+    this.createPlayerAnimations();
     this.playerSpeed = 145;
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys("W,A,S,D,E");
@@ -65,9 +80,14 @@ class TownScene extends Phaser.Scene {
       this.anims.create({
         key: `chiikawa-walk-${name}`,
         frames: this.anims.generateFrameNumbers("chiikawa", {
-          frames: [start + 1, start + 2, start + 3, start + 2]
+          frames: [
+            start,
+            start + 1,
+            start + 2,
+            start + 3
+          ]
         }),
-        frameRate: 7,
+        frameRate: 6,
         repeat: -1
       });
     });
@@ -264,6 +284,13 @@ class TownScene extends Phaser.Scene {
   }
 
   update() {
+
+    // Keep white backing attached to the character
+    this.playerFill.setPosition(
+      this.player.x,
+      this.player.y
+    );
+
     if (!this.player || this.dialogOpen) return;
     const left = this.cursors.left.isDown || this.keys.A.isDown;
     const right = this.cursors.right.isDown || this.keys.D.isDown;
@@ -275,10 +302,10 @@ class TownScene extends Phaser.Scene {
     if (vx && vy) { vx *= 0.7071; vy *= 0.7071; }
 
     this.player.setVelocity(vx * this.playerSpeed, vy * this.playerSpeed);
-    if (vx < 0) this.player.setTexture("player-left");
-    else if (vx > 0) this.player.setTexture("player-right");
-    else if (vy < 0) this.player.setTexture("player-up");
-    else if (vy > 0) this.player.setTexture("player-down");
+    if (vx < 0) this.facing = "left";
+    else if (vx > 0) this.facing = "right";
+    else if (vy < 0) this.facing = "up";
+    else if (vy > 0) this.facing = "down";
 
     // Chiikawa sprite animation based on movement direction
     if (vx !== 0 || vy !== 0) {
