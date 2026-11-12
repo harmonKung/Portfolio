@@ -330,6 +330,50 @@ class TownScene extends Phaser.Scene {
   }
 }
 
+// Let there be music
+document.addEventListener("DOMContentLoaded", () => {
+    const bgm = document.getElementById("bgm");
+    const musicToggle = document.getElementById("music-toggle");
+
+    bgm.volume = 0.3;
+
+    const updateMusicToggle = (isPlaying) => {
+        musicToggle.textContent = isPlaying ? "Music ON" : "Music OFF";
+        musicToggle.setAttribute("aria-pressed", String(isPlaying));
+    };
+
+    const setMusicEnabled = async (enabled) => {
+        if (!enabled) {
+            bgm.pause();
+            updateMusicToggle(false);
+            return;
+        }
+
+        try {
+            await bgm.play();
+            updateMusicToggle(true);
+        } catch (error) {
+            updateMusicToggle(false);
+            console.warn("Background music could not start:", error);
+        }
+    };
+
+    const toggleMusic = () => setMusicEnabled(bgm.paused);
+    musicToggle.addEventListener("click", toggleMusic);
+    document.addEventListener("keydown", (event) => {
+        if (event.key.toLowerCase() !== "m" || event.repeat) return;
+
+        const target = event.target;
+        if (target instanceof HTMLElement &&
+            (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))) return;
+
+        event.preventDefault();
+        toggleMusic();
+    });
+
+    setMusicEnabled(true);
+});
+
 
 // Start Phaser only after the TownScene class has been defined.
 const config = {
