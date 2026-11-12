@@ -9,7 +9,11 @@
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
   <script defer src="js\game.js"></script>
 </head>
+
 <body>
+  <audio id="bgm" autoplay loop>
+    <source src="assets/sounds/bgm.webm" type="audio/webm">
+  </audio>
   <main class="page-shell">
     <header class="site-header">
       <div>
@@ -29,6 +33,8 @@
         <span class="keycap">↑</span><span class="keycap">←</span><span class="keycap">↓</span><span class="keycap">→</span>
         <span class="hint">Move</span>
         <span class="keycap interact-key">E</span><span class="hint">Interact</span>
+        <span class="keycap">M</span><span class="hint">Mute / unmute</span>
+        <button class="music-toggle" id="music-toggle" type="button" aria-pressed="true">Music ON</button>
         <span class="bottom-note">Explore & interact with the town to discover my work</span>
       </div>
     </section>
