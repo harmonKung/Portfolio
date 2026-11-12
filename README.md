@@ -22,6 +22,6 @@
  This is the first playable prototype. The player and map art are generated from simple pixel shapes in Phaser, so there are no separate sprite assets yet.
 
 
-![Movement](assets/videos/movement.gif)
+![Movement](Portfolio/assets/videos/movement.gif)
 
-[What I have so far](assets/videos/Demo.mp4)
+[What I have so far](Portfolio/assets/videos/Demo.mp4)
